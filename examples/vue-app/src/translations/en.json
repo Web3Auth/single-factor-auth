@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Web3Auth SFA Web Vue Demo",
+    "description": "This is a demo of Web3Auth SFA in a Vue.js app.",
+    "btnLogout": "Logout",
+    "documentation": "Documentation",
+    "network": "Network",
+    "chain": "Chain",
+    "adapters": "Adapters",
+    "greeting": "Let's configure Web3Auth SFA!",
+
+    "chainNamespace": "Chain namespace",
+    "buttons": {
+      "btnClearConsole": "Clear Console",
+      "btnGetUserInfo": "Get User Info",
+      "btnGetAccounts": "Get Accounts",
+      "btnGetBalance": "Get Balance",
+      "btnSendEth": "Send ETH",
+      "btnSignEthMessage": "Sign ETH Message",
+      "btnGetConnectedChainId": "Get Connected Chain ID",
+      "btnAddChain": "Add Chain",
+      "btnSwitchChain": "Switch Chain",
+      "btnSignAndSendTransaction": "Sign and Send Transaction",
+      "btnSignTransaction": "Sign Transaction",
+      "btnSignMessage": "Sign Message",
+      "btnSignAllTransactions": "Sign All Transactions",
+      "btnShowWalletUI": "Show Wallet UI",
+      "btnShowCheckout": "Show Checkout",
+      "btnShowWalletConnectScanner": "Show WalletConnect Scanner",
+      "btnRegisterPasskey": "Register Passkey",
+      "btnListAllPasskeys": "List All Passkeys"
+    }
+  }
+}
