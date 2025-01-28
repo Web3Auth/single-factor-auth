@@ -43,7 +43,7 @@
     "@toruslabs/torus.js": "^15.1.1",
     "@web3auth/auth": "^9.5.3",
     "@web3auth/base": "^9.4.5",
-    "bs58": "^5.0.0"
+    "bs58": "^6.0.0"
   },
   "devDependencies": {
     "@babel/register": "^7.25.9",
