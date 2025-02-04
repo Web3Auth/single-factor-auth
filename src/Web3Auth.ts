@@ -209,6 +209,9 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
         version: "1",
         nonce: Math.random().toString(36).slice(2),
         issuedAt: new Date().toISOString(),
+      };
+
+      const additionalMetadata = {
         email: userInfo.email,
         name: userInfo.name,
         profileImage: userInfo.profileImage,
@@ -219,17 +222,18 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
         oAuthIdToken: userInfo.oAuthIdToken,
         oAuthAccessToken: userInfo.oAuthAccessToken,
         wallets: [] as unknown[],
-        signatures: [] as unknown[],
+        signatures: this.state.signatures,
+        network: this.coreOptions.web3AuthNetwork,
       };
 
       if (this.coreOptions.usePnPKey) {
-        payload.wallets.push({
+        additionalMetadata.wallets.push({
           public_key: publicKey,
           type: "web3auth_app_key",
           curve: chainNamespace === CHAIN_NAMESPACES.EIP155 ? KEY_TYPE.SECP256K1 : KEY_TYPE.ED25519,
         });
       } else {
-        payload.wallets.push({
+        additionalMetadata.wallets.push({
           public_key: publicKey,
           type: "web3auth_threshold_key",
           curve: chainNamespace === CHAIN_NAMESPACES.EIP155 ? KEY_TYPE.SECP256K1 : KEY_TYPE.ED25519,
@@ -245,7 +249,9 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
         this.SFA_ISSUER,
         this.coreOptions.sessionTime,
         this.coreOptions.clientId,
-        this.coreOptions.web3AuthNetwork as WEB3AUTH_NETWORK_TYPE
+        this.coreOptions.web3AuthNetwork as WEB3AUTH_NETWORK_TYPE,
+        undefined,
+        additionalMetadata
       );
       saveToken(accounts[0] as string, "SFA", idToken);
       return {
