@@ -102,7 +102,7 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
   }
 
   get connected(): boolean {
-    return Boolean(this.sessionManager?.sessionId);
+    return this.status === ADAPTER_STATUS.CONNECTED;
   }
 
   get provider(): IProvider | null {
@@ -356,11 +356,12 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
 
   async logout(): Promise<void> {
     if (!this.connected) throw WalletLoginError.notConnectedError("Not logged in");
-    const sessionId = this.currentStorage.get<string>("sessionId");
-    if (!sessionId) throw WalletLoginError.fromCode(5000, "User not logged in");
 
-    await this.sessionManager.invalidateSession();
-    this.currentStorage.set("sessionId", "");
+    if (this.coreOptions.mode !== SDK_MODE.NODE) {
+      await this.sessionManager.invalidateSession();
+      this.currentStorage.set("sessionId", "");
+    }
+
     this.updateState({
       privKey: "",
       userInfo: {
