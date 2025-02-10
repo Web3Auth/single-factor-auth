@@ -4,7 +4,7 @@ import { CHAIN_NAMESPACES, IProvider, log, WEB3AUTH_NETWORK, IPlugin } from "@we
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { PasskeysPlugin } from "@web3auth/passkeys-sfa-plugin";
 // Import Single Factor Auth SDK for no redirect flow
-import { ADAPTER_EVENTS, decodeToken, Web3Auth } from "@web3auth/single-factor-auth";
+import { ADAPTER_EVENTS, decodeToken, UserAuthInfo, Web3Auth } from "@web3auth/single-factor-auth";
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
@@ -62,6 +62,7 @@ export interface IPlaygroundContext {
   unlinkPasskey: (id: number) => void;
   logout: () => void;
   getUserInfo: () => Promise<AuthUserInfo | null>;
+  getExternalIdToken: () => Promise<UserAuthInfo | null>;
   showCheckout: () => void;
   showWalletUI: () => void;
   showWalletScanner: () => void;
@@ -94,6 +95,7 @@ export const PlaygroundContext = createContext<IPlaygroundContext>({
   unlinkPasskey: async () => null,
   logout: async () => null,
   getUserInfo: async () => null,
+  getExternalIdToken: async () => null,
   showCheckout: async () => null,
   showWalletUI: async () => null,
   showWalletScanner: async () => null,
@@ -326,6 +328,17 @@ export function Playground({ children }: IPlaygroundProps) {
     return null;
   }, [web3authSFAuth]);
 
+  const getExternalIdToken = useCallback(async (): Promise<UserAuthInfo | null> => {
+    if (web3authSFAuth && web3authSFAuth?.connected) {
+      const data = await web3authSFAuth?.authenticateUser();
+      setPlaygroundConsoleTitle("Id Token");
+      setPlaygroundConsoleData(JSON.stringify(data, null, 2));
+      uiConsole(data);
+      return data;
+    }
+    return null;
+  }, [web3authSFAuth]);
+
   const showCheckout = useCallback(async () => {
     if (!wsPlugin) {
       uiConsole("wallet services plugin not initialized yet");
@@ -523,6 +536,7 @@ export function Playground({ children }: IPlaygroundProps) {
       unlinkPasskey,
       logout,
       getUserInfo,
+      getExternalIdToken,
       showCheckout,
       showWalletUI,
       showWalletScanner,
@@ -554,6 +568,7 @@ export function Playground({ children }: IPlaygroundProps) {
       unlinkPasskey,
       logout,
       getUserInfo,
+      getExternalIdToken,
       showCheckout,
       showWalletUI,
       showWalletScanner,

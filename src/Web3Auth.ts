@@ -102,7 +102,7 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
   }
 
   get connected(): boolean {
-    return Boolean(this.sessionManager?.sessionId);
+    return this.status === ADAPTER_STATUS.CONNECTED;
   }
 
   get provider(): IProvider | null {
@@ -182,9 +182,16 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
 
     const { chainNamespace, chainId } = this.coreOptions.chainConfig || {};
     if (!this.authInstance || !this.privKeyProvider) throw WalletInitializationError.notReady();
-    const accounts = await this.privKeyProvider.provider.request<unknown, string[]>({
-      method: chainNamespace === CHAIN_NAMESPACES.EIP155 ? "eth_accounts" : "getAccounts",
-    });
+    const [accounts, publicKey] = await Promise.all([
+      this.privKeyProvider.provider.request<unknown, string[]>({
+        method: chainNamespace === CHAIN_NAMESPACES.EIP155 ? "eth_accounts" : "getAccounts",
+      }),
+      this.privKeyProvider.provider.request<unknown, string[]>({
+        method: "public_key",
+      }),
+    ]);
+    // const thresholdPrivKey = this._getBasePrivKey();
+
     if (accounts && accounts.length > 0) {
       const existingToken = getSavedToken(accounts[0] as string, "SFA");
       if (existingToken) {
@@ -204,6 +211,35 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
         issuedAt: new Date().toISOString(),
       };
 
+      const additionalMetadata = {
+        email: userInfo.email,
+        name: userInfo.name,
+        profileImage: userInfo.profileImage,
+        aggregateVerifier: userInfo.aggregateVerifier,
+        verifier: userInfo.verifier,
+        verifierId: userInfo.verifierId,
+        typeOfLogin: userInfo.typeOfLogin || "jwt",
+        oAuthIdToken: userInfo.oAuthIdToken,
+        oAuthAccessToken: userInfo.oAuthAccessToken,
+        wallets: [] as unknown[],
+        signatures: this.state.signatures,
+        network: this.coreOptions.web3AuthNetwork,
+      };
+
+      if (this.coreOptions.usePnPKey) {
+        additionalMetadata.wallets.push({
+          public_key: publicKey,
+          type: "web3auth_app_key",
+          curve: chainNamespace === CHAIN_NAMESPACES.EIP155 ? KEY_TYPE.SECP256K1 : KEY_TYPE.ED25519,
+        });
+      } else {
+        additionalMetadata.wallets.push({
+          public_key: publicKey,
+          type: "web3auth_threshold_key",
+          curve: chainNamespace === CHAIN_NAMESPACES.EIP155 ? KEY_TYPE.SECP256K1 : KEY_TYPE.ED25519,
+        });
+      }
+
       const challenge = await signChallenge(payload, chainNamespace);
       const signedMessage = await this._getSignedMessage(challenge, accounts, chainNamespace);
       const idToken = await verifySignedChallenge(
@@ -213,7 +249,9 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
         this.SFA_ISSUER,
         this.coreOptions.sessionTime,
         this.coreOptions.clientId,
-        this.coreOptions.web3AuthNetwork as WEB3AUTH_NETWORK_TYPE
+        this.coreOptions.web3AuthNetwork as WEB3AUTH_NETWORK_TYPE,
+        undefined,
+        additionalMetadata
       );
       saveToken(accounts[0] as string, "SFA", idToken);
       return {
@@ -318,11 +356,12 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
 
   async logout(): Promise<void> {
     if (!this.connected) throw WalletLoginError.notConnectedError("Not logged in");
-    const sessionId = this.currentStorage.get<string>("sessionId");
-    if (!sessionId) throw WalletLoginError.fromCode(5000, "User not logged in");
 
-    await this.sessionManager.invalidateSession();
-    this.currentStorage.set("sessionId", "");
+    if (this.coreOptions.mode !== SDK_MODE.NODE) {
+      await this.sessionManager.invalidateSession();
+      this.currentStorage.set("sessionId", "");
+    }
+
     this.updateState({
       privKey: "",
       userInfo: {
@@ -415,16 +454,24 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
     let finalPrivKey = privKey.padStart(64, "0");
     // get app scoped keys.
     if (this.coreOptions.usePnPKey) {
-      const pnpPrivKey = subkey(finalPrivKey, Buffer.from(this.coreOptions.clientId, "base64"));
-      finalPrivKey = pnpPrivKey.padStart(64, "0");
+      finalPrivKey = this.getSubKey(finalPrivKey);
     }
     if (this.coreOptions.chainConfig.chainNamespace === CHAIN_NAMESPACES.SOLANA) {
-      if (!this.privKeyProvider.getEd25519Key) {
-        throw WalletLoginError.fromCode(5000, "Private key provider is not valid, Missing getEd25519Key function");
-      }
-      finalPrivKey = this.privKeyProvider.getEd25519Key(finalPrivKey);
+      finalPrivKey = this.getEd25519Key(finalPrivKey);
     }
     return finalPrivKey;
+  }
+
+  private getSubKey(privKey: string) {
+    const pnpPrivKey = subkey(privKey, Buffer.from(this.coreOptions.clientId, "base64"));
+    return pnpPrivKey.padStart(64, "0");
+  }
+
+  private getEd25519Key(privKey: string) {
+    if (!this.privKeyProvider.getEd25519Key) {
+      throw WalletLoginError.fromCode(5000, "Private key provider is not valid, Missing getEd25519Key function");
+    }
+    return this.privKeyProvider.getEd25519Key(privKey);
   }
 
   private async getTorusKey(loginParams: LoginParams): Promise<string> {
