@@ -438,8 +438,8 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
 
     // update the local state.
     this.updateState({ privKey: finalPrivKey, basePrivKey: privKey, userInfo: params.userInfo, signatures, passkeyToken });
-    this.emit(ADAPTER_EVENTS.CONNECTED, { adapter: this.connectedAdapterName, provider: this.provider, reconnected: false });
     this.status = ADAPTER_STATUS.CONNECTED;
+    this.emit(ADAPTER_EVENTS.CONNECTED, { adapter: this.connectedAdapterName, provider: this.provider, reconnected: false });
   }
 
   public _getBasePrivKey() {
