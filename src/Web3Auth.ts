@@ -126,9 +126,7 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
       throw WalletInitializationError.invalidParams("provider should have chainConfig and should be initialized with chainId and chainNamespace");
     }
 
-    const storageKey =
-      this.coreOptions.sessionKey ||
-      `${this.baseStorageKey}_${this.coreOptions.chainConfig.chainNamespace === CHAIN_NAMESPACES.SOLANA ? "solana" : "eip"}_${this.coreOptions.usePnPKey ? "pnp" : "core_kit"}`;
+    const storageKey = this.coreOptions.sessionKey || `${this.baseStorageKey}_${this.coreOptions.usePnPKey ? "pnp" : "core_kit"}`;
     this.currentStorage = new AsyncStorage(storageKey, this.coreOptions.storage);
     this.nodeDetails = fetchLocalConfig(this.coreOptions.web3AuthNetwork, KEY_TYPE.SECP256K1);
     this.authInstance = new Torus({
@@ -161,7 +159,8 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
       });
       if (data && data.privKey) {
         this.torusPrivKey = data.basePrivKey;
-        await this.privKeyProvider.setupProvider(data.privKey);
+        const finalPrivKey = await this.getFinalPrivKey(data.basePrivKey);
+        await this.privKeyProvider.setupProvider(finalPrivKey);
         // setup aa provider after private key provider is setup
         if (this.accountAbstractionProvider) {
           await this.accountAbstractionProvider.setupProvider(this.privKeyProvider);
