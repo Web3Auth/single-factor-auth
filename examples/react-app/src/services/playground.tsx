@@ -1,6 +1,6 @@
 import { CredentialResponse, googleLogout } from "@react-oauth/google";
 import { AuthUserInfo } from "@web3auth/auth";
-import { CHAIN_NAMESPACES, IProvider, log, WEB3AUTH_NETWORK, IPlugin } from "@web3auth/base";
+import { CHAIN_NAMESPACES, getChainConfig, IPlugin, IProvider, log, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { PasskeysPlugin } from "@web3auth/passkeys-sfa-plugin";
 // Import Single Factor Auth SDK for no redirect flow
@@ -8,8 +8,6 @@ import { ADAPTER_EVENTS, decodeToken, UserAuthInfo, Web3Auth } from "@web3auth/s
 import { WalletServicesPlugin } from "@web3auth/wallet-services-plugin";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import RPC from "../evm.ethers";
-import { shouldSupportPasskey } from "../utils";
 import {
   AccountAbstractionProvider,
   BiconomySmartAccount,
@@ -19,6 +17,8 @@ import {
   TrustSmartAccount,
 } from "@web3auth/account-abstraction-provider";
 import { getDefaultBundlerUrl } from "../config";
+import RPC from "../evm.ethers";
+import { shouldSupportPasskey } from "../utils";
 
 type PasskeysData = {
   id: number;
@@ -119,17 +119,7 @@ const verifier = "w3a-sfa-web-google";
 
 const clientId = "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get from https://dashboard.web3auth.io
 
-export const chainConfigMain = {
-  chainId: "0x1",
-  displayName: "Ethereum Mainnet",
-  chainNamespace: CHAIN_NAMESPACES.EIP155,
-  tickerName: "Ethereum",
-  ticker: "ETH",
-  decimals: 18,
-  rpcTarget: "https://rpc.ankr.com/eth",
-  blockExplorerUrl: "https://etherscan.io",
-  logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
-};
+export const chainConfigMain = getChainConfig(CHAIN_NAMESPACES.EIP155, "0x1", clientId)!;
 
 // const chainConfigTest = {
 //   chainId: "0xaa36a7",
@@ -474,8 +464,8 @@ export function Playground({ children }: IPlaygroundProps) {
         const walletServicePlugin = new WalletServicesPlugin({
           walletInitOptions: {
             whiteLabel: {
-              logoLight: "https://web3auth.io/images/web3auth-logo.svg",
-              logoDark: "https://web3auth.io/images/web3auth-logo-w.svg",
+              logoLight: "https://images.web3auth.io/web3auth-logo-w.svg",
+              logoDark: "https://images.web3auth.io/web3auth-logo-w-light.svg",
             },
             confirmationStrategy: "modal",
           },
