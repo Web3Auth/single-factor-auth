@@ -1,4 +1,4 @@
-import { IStorage } from "@web3auth/auth";
+import { type IStorage } from "@web3auth/auth";
 
 import { IAsyncStorage, ISecureStore } from "./interface";
 

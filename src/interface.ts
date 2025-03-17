@@ -1,5 +1,5 @@
 import { TORUS_LEGACY_NETWORK, type TORUS_NETWORK_TYPE, TORUS_SAPPHIRE_NETWORK } from "@toruslabs/constants";
-import { AuthUserInfo, IStorage } from "@web3auth/auth";
+import { type AuthUserInfo, type IStorage } from "@web3auth/auth";
 import {
   type AdapterEvents,
   CustomChainConfig,

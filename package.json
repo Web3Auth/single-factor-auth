@@ -15,7 +15,7 @@
   "module": "dist/lib.esm/index.js",
   "unpkg": "dist/singleFactorAuth.umd.min.js",
   "jsdelivr": "dist/singleFactorAuth.umd.min.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/lib.cjs/types/index.d.ts",
   "author": "Torus Labs",
   "homepage": "https://github.com/Web3Auth/single-factor-auth#readme",
   "license": "ISC",
