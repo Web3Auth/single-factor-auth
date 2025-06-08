@@ -1,4 +1,4 @@
-{
+{"vite": "^6.0.11"
   "name": "@web3auth/single-factor-auth",
   "version": "9.5.0",
   "description": "Multi chain wallet aggregator silent MFA for web3Auth",
