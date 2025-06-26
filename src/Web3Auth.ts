@@ -3,7 +3,15 @@ import { INodeDetails, KEY_TYPE, TORUS_SAPPHIRE_NETWORK, TORUS_SAPPHIRE_NETWORK_
 import { fetchLocalConfig } from "@toruslabs/fnd-base";
 import { SessionManager } from "@toruslabs/session-manager";
 import { keccak256, Torus, TorusKey } from "@toruslabs/torus.js";
-import { AuthUserInfo, IStorage, MemoryStore, SafeEventEmitter, subkey, WEB3AUTH_NETWORK, type WEB3AUTH_NETWORK_TYPE } from "@web3auth/auth";
+import {
+  type AuthUserInfo,
+  type IStorage,
+  MemoryStore,
+  SafeEventEmitter,
+  subkey,
+  WEB3AUTH_NETWORK,
+  type WEB3AUTH_NETWORK_TYPE,
+} from "@web3auth/auth";
 import {
   ADAPTER_EVENTS,
   ADAPTER_STATUS,
@@ -338,7 +346,7 @@ export class Web3Auth extends SafeEventEmitter<Web3AuthSfaEvents> implements IWe
     let decodedUserInfo: Partial<Auth0UserInfo>;
     try {
       decodedUserInfo = decodeToken<Auth0UserInfo>(idToken).payload;
-    } catch (error) {
+    } catch {
       decodedUserInfo = loginParams.fallbackUserInfo;
     }
     const userInfo: AuthUserInfo = {
