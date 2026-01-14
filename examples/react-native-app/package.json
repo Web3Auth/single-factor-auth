@@ -12,8 +12,8 @@
   "//IMP START": "IMP START - Web3Auth Installation",
   "dependencies": {
     "@ethersproject/shims": "^5.7.0",
-    "@react-native-firebase/app": "^20.4.0",
-    "@react-native-firebase/auth": "^20.4.0",
+    "@react-native-firebase/app": "^23.8.2",
+    "@react-native-firebase/auth": "^23.8.2",
     "@web3auth/account-abstraction-provider": "^9.3.0",
     "@web3auth/base": "^9.2.3",
     "@web3auth/ethereum-provider": "^9.2.3",
